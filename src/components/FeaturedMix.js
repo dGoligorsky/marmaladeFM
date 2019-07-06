@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React from 'react';
 
 const FeaturedMix = props => (
     <div className = 'w-50-l vh-100 flex items-center justify-center cover bg-center bg-featured pad-bottom fixed-l left-0'>
