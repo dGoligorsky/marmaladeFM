@@ -8,12 +8,10 @@ import FeaturedMix from './FeaturedMix'
 import Header from './Header'
 import Home from './Home'
 import Archive from './Archive'
+import About from './About'
 
 import Mix from './Mix'
 import mixesData from '../data/mixes'
-
-
-const About = () => <h1>About</h1>
 
 class App extends Component {
 
@@ -126,7 +124,7 @@ class App extends Component {
                 {/* { here we pass our state and our actions down into the home component so that we can use them } */}
                 <Route exact path="/" render={() => <Home {...this.state} {...this.actions}/>} />
                 <Route path="/archive" render={() => <Archive {...this.state} {...this.actions} />}/>
-                <Route path="/about" render={About} />
+                <Route path="/about" render={() => <About {...this.state} />}/>
               </div>
             </div>
             {/* { AudioPlayer } */}
