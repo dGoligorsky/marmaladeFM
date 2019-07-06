@@ -7,9 +7,12 @@ import {
 import FeaturedMix from './FeaturedMix'
 import Header from './Header'
 import Home from './Home'
-import Mix from './Mix'
+import Archive from './Archive'
 
-const Archive = () => <h1>Archive</h1>
+import Mix from './Mix'
+import mixesData from '../data/mixes'
+
+
 const About = () => <h1>About</h1>
 
 class App extends Component {
@@ -20,8 +23,39 @@ class App extends Component {
         // whether a mix is currently playing
         playing: false,
         //the id of the current mix
-        currentMix: ''
+        currentMix: '',
+        // this will be equal to our data file of mixes
+        mixIds: mixesData,
+        mix: null,
+        mixes: []
     }
+  }
+
+  // /fanujanne/fanu-presents-breaks-n-beats-podcast-4/
+
+  fetchMixes = async () => {
+
+    const {mixIds} = this.state
+    console.log(mixIds)
+
+    // here we loop over our mix ids and fetch each one
+    mixIds.map(async id => {
+      try {
+        // always remember to use await when using fetch in an async function
+        const response = await fetch(`https://api.mixcloud.com${id}`)
+        const data = await response.json()
+
+        // put the mix into our state
+        this.setState((prevState, props) => ({
+          // here we add our data onto the end of all our previous state using the spread
+          mixes: [...prevState.mixes, data]
+        }))
+        // console.log(data)
+      } catch(error) {
+        console.log(error)
+      }
+    })
+
   }
 
   mountAudio = async() => {
@@ -37,12 +71,12 @@ class App extends Component {
       playing: true
     }))
 
-    console.log(this.widget)
   };
 
   componentDidMount() {
     // when our app component is all loaded onto the page, out componentDidMount gets called and we can be sure everything is ready, so we then run our mountAudio() method
     this.mountAudio()
+    this.fetchMixes()
   }
 
   actions = {
@@ -55,6 +89,13 @@ class App extends Component {
     },
   
     playMix: mixName => {
+      // if the mixName is the same as the currently playing mix, we want to pause it instead
+      const {currentMix} = this.state
+      if (mixName === currentMix) {
+        // when our code sees a return statement, it will stop running here and exit the function
+        return this.widget.togglePlay()
+      } 
+
       // update the current mix in our state with the mixName
       this.setState({
         currentMix: mixName
@@ -66,6 +107,10 @@ class App extends Component {
   }
 
   render() {
+
+    // if the array is empty, we need to assign it a default value of an empty object aka {}
+    const [firstMix = {}] = this.state.mixes
+
     return (
         // Router wraps our whole page and lets us use react-router
         <Router>
@@ -73,15 +118,15 @@ class App extends Component {
           <div>
             {/* { this div contains our page (excluding audio player) } */}
             <div className='flex-l justify-end'>
-              <FeaturedMix />
+              <FeaturedMix {...this.state} {...this.actions} {...firstMix} id={firstMix.key}/>
               <div className='w-50-l relative z-1'>
                 <Header />
                 {/* { Routed Page } */}
 
                 {/* { here we pass our state and our actions down into the home component so that we can use them } */}
-                <Route exact path="/" component={() => <Home {...this.state} {...this.actions} />} />
-                <Route path="/archive" component={Archive} />
-                <Route path="/about" component={About} />
+                <Route exact path="/" render={() => <Home {...this.state} {...this.actions}/>} />
+                <Route path="/archive" render={() => <Archive {...this.state} {...this.actions} />}/>
+                <Route path="/about" render={About} />
               </div>
             </div>
             {/* { AudioPlayer } */}
